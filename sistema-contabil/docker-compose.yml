@@ -1,0 +1,42 @@
+# Execução com Docker: docker compose up -d --build  →  http://localhost:8090/sistema-contabil/
+# (Quem usa XAMPP não precisa deste arquivo; veja o README.)
+name: siscontabil
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8090:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: contabil
+      DB_USER: contabil
+      DB_PASS: contabil123
+    # O projeto fica numa subpasta, como no htdocs do XAMPP.
+    volumes:
+      - .:/var/www/html/sistema-contabil
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10.4
+    environment:
+      MARIADB_ROOT_PASSWORD: root123
+      MARIADB_DATABASE: contabil
+      MARIADB_USER: contabil
+      MARIADB_PASSWORD: contabil123
+    volumes:
+      # Na primeira subida, o banco é criado a partir do database.sql (estrutura e dados de exemplo).
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - dados:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot123 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  dados:

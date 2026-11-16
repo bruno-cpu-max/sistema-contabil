@@ -1,0 +1,17 @@
+# Pelo navegador, só a pasta public/ é acessível. Código, banco (database.sql) e arquivos enviados
+# (storage/) ficam protegidos mesmo com o projeto inteiro dentro do htdocs do XAMPP.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # http://localhost/sistema-contabil/ leva para o sistema.
+    RewriteCond %{REQUEST_URI} ^(.*)/$
+    RewriteRule ^$ %1/public/ [R=302,L]
+    # Qualquer outro caminho fora de public/ é proibido.
+    RewriteRule ^(?!public(/|$)) - [F,L]
+</IfModule>
+
+# Proteção extra, caso o mod_rewrite esteja desligado.
+<FilesMatch "\.(sql|md|yml|yaml|log|ini|json|lock)$">
+    Require all denied
+</FilesMatch>
